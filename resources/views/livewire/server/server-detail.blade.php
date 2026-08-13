@@ -1,4 +1,4 @@
-<div class="space-y-6" wire:poll.5s>
+<div class="space-y-6" wire:poll.3s>
     <!-- Top Header & Breadcrumb -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-800 border border-slate-700/80 rounded-2xl p-6 shadow-sm">
         <div class="space-y-2">
