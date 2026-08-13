@@ -1,8 +1,14 @@
-<div class="space-y-8">
+<div wire:poll.15s class="space-y-8">
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-white tracking-tight">Monitoring Windows VPS</h1>
+            <div class="flex items-center space-x-3">
+                <h1 class="text-2xl font-bold text-white tracking-tight">Monitoring Windows VPS</h1>
+                <span class="inline-flex items-center text-xs font-medium text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-1.5"></span>
+                    Live Refresh (15s)
+                </span>
+            </div>
             <p class="text-sm text-slate-400 mt-1">Kelola dan pantau status ketersediaan VPS Windows secara terpusat.</p>
         </div>
         <button wire:click="openRegisterModal" type="button" class="inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-xl shadow-md transition-all duration-200 active:scale-95 space-x-2">
