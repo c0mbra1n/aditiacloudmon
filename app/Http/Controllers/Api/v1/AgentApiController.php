@@ -92,9 +92,25 @@ class AgentApiController extends Controller
             'last_seen_at' => now(),
         ]);
 
+        // Check for pending agent commands (reboot / shutdown)
+        $pendingCommand = null;
+        $cmdRecord = \App\Models\AgentCommand::where('server_id', $server->id)
+            ->where('status', 'pending')
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+        if ($cmdRecord) {
+            $pendingCommand = $cmdRecord->command;
+            $cmdRecord->update([
+                'status' => 'executed',
+                'executed_at' => now(),
+            ]);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Heartbeat acknowledged',
+            'pending_command' => $pendingCommand,
             'data' => [
                 'server_status' => $status,
                 'last_seen_at' => $server->last_seen_at->toIso8601String(),

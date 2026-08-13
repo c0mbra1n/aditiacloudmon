@@ -44,13 +44,32 @@
         </div>
 
         <!-- Header Action Buttons -->
-        <div class="flex items-center space-x-3">
+        <div class="flex flex-wrap items-center gap-3">
+            <button wire:click="confirmRebootVps" type="button" class="px-4 py-2.5 bg-amber-600/90 hover:bg-amber-500 text-white text-xs font-semibold rounded-xl shadow-sm transition-all active:scale-95 flex items-center space-x-2">
+                <svg class="w-4 h-4 text-amber-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span>Reboot VPS</span>
+            </button>
+            <button wire:click="confirmShutdownVps" type="button" class="px-4 py-2.5 bg-rose-600/90 hover:bg-rose-500 text-white text-xs font-semibold rounded-xl shadow-sm transition-all active:scale-95 flex items-center space-x-2">
+                <svg class="w-4 h-4 text-rose-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+                <span>Shutdown VPS</span>
+            </button>
             <button wire:click="regenerateToken" type="button" class="px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold rounded-xl transition-all active:scale-95 flex items-center space-x-2">
                 <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
                 <span>Rotasi Secret Token</span>
             </button>
         </div>
     </div>
+
+    <!-- Pending Power Command Alert Banner -->
+    @if($pendingCommand)
+        <div class="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-xs space-y-1 animate-pulse">
+            <div class="flex items-center space-x-2 text-amber-400 font-bold">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>Instruksi {{ strtoupper($pendingCommand->command) }} Berada di Antrean!</span>
+            </div>
+            <p class="text-slate-300">Perintah daya <code class="font-mono bg-slate-900 px-1.5 py-0.5 rounded text-amber-300">{{ strtoupper($pendingCommand->command) }}</code> telah dikirimkan dan akan dieksekusi oleh Agent pada ping heartbeat berikutnya (sekitar 30 detik).</p>
+        </div>
+    @endif
 
     <!-- Regenerated Token Notification Alert -->
     @if($newRegeneratedToken)

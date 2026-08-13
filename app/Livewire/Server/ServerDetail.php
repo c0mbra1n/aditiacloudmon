@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Server;
 
+use App\Models\AgentCommand;
 use App\Models\AgentToken;
 use App\Models\MetricAggregate1m;
 use App\Models\MetricAggregate5m;
@@ -26,6 +27,8 @@ class ServerDetail extends Component
     protected $listeners = [
         'tokenRevoked' => 'revokeToken',
         'serverDeleted' => 'deleteServer',
+        'rebootVps' => 'rebootVps',
+        'shutdownVps' => 'shutdownVps',
     ];
 
     public function mount(Server $server): void
@@ -41,6 +44,70 @@ class ServerDetail extends Component
     public function setPeriod(string $period): void
     {
         $this->selectedPeriod = $period;
+    }
+
+    public function confirmRebootVps(): void
+    {
+        $this->dispatch('swal:confirm', [
+            'title' => 'Reboot Windows VPS?',
+            'text' => 'Agent akan menerima instruksi reboot pada heartbeat berikutnya (sekitar 30 detik).',
+            'icon' => 'warning',
+            'confirmButtonText' => 'Ya, Reboot Server',
+            'cancelButtonText' => 'Batal',
+            'method' => 'rebootVps',
+        ]);
+    }
+
+    public function rebootVps(): void
+    {
+        // Cancel previous pending commands
+        AgentCommand::where('server_id', $this->server->id)
+            ->where('status', 'pending')
+            ->update(['status' => 'cancelled']);
+
+        AgentCommand::create([
+            'server_id' => $this->server->id,
+            'command' => 'reboot',
+            'status' => 'pending',
+            'created_by' => auth()->id(),
+        ]);
+
+        $this->dispatch('swal:toast', [
+            'icon' => 'success',
+            'title' => 'Perintah Reboot Berhasil Dikirim ke Antrean Agent!'
+        ]);
+    }
+
+    public function confirmShutdownVps(): void
+    {
+        $this->dispatch('swal:confirm', [
+            'title' => 'Shutdown (Matikan) Windows VPS?',
+            'text' => 'Agent akan menerima instruksi shutdown pada heartbeat berikutnya.',
+            'icon' => 'error',
+            'confirmButtonText' => 'Ya, Matikan VPS',
+            'cancelButtonText' => 'Batal',
+            'method' => 'shutdownVps',
+        ]);
+    }
+
+    public function shutdownVps(): void
+    {
+        // Cancel previous pending commands
+        AgentCommand::where('server_id', $this->server->id)
+            ->where('status', 'pending')
+            ->update(['status' => 'cancelled']);
+
+        AgentCommand::create([
+            'server_id' => $this->server->id,
+            'command' => 'shutdown',
+            'status' => 'pending',
+            'created_by' => auth()->id(),
+        ]);
+
+        $this->dispatch('swal:toast', [
+            'icon' => 'success',
+            'title' => 'Perintah Shutdown Berhasil Dikirim ke Antrean Agent!'
+        ]);
     }
 
     public function regenerateToken(): void
@@ -225,11 +292,18 @@ class ServerDetail extends Component
             ->orderBy('port', 'asc')
             ->get();
 
+        // Pending Command
+        $pendingCommand = AgentCommand::where('server_id', $this->server->id)
+            ->where('status', 'pending')
+            ->latest()
+            ->first();
+
         return view('livewire.server.server-detail', [
             'latestMetric' => $latestMetric,
             'services' => $services,
             'processes' => $processes,
             'ports' => $ports,
+            'pendingCommand' => $pendingCommand,
             'formattedUptime' => $this->getFormattedUptimeProperty(),
             'chartData' => $this->getChartDataProperty(),
         ])->layout('components.layouts.app', ['title' => 'Detail Server - ' . $this->server->name]);

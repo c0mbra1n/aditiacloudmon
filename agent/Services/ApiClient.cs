@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -24,9 +25,36 @@ public class ApiClient : IApiClient
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
 
-    public Task<bool> SendHeartbeatAsync(HeartbeatPayload payload, CancellationToken cancellationToken = default)
+    public async Task<HeartbeatResponse?> SendHeartbeatAsync(HeartbeatPayload payload, CancellationToken cancellationToken = default)
     {
-        return PostWithRetryAsync("api/v1/agent/heartbeat", payload, cancellationToken);
+        try
+        {
+            var json = JsonSerializer.Serialize(payload);
+            using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            _logger.LogInformation("Sending outbound HTTPS Heartbeat POST to api/v1/agent/heartbeat");
+            var response = await _httpClient.PostAsync("api/v1/agent/heartbeat", content, cancellationToken);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var body = await response.Content.ReadAsStringAsync(cancellationToken);
+                var hbRes = JsonSerializer.Deserialize<HeartbeatResponse>(body);
+
+                if (hbRes != null && !string.IsNullOrEmpty(hbRes.PendingCommand))
+                {
+                    _logger.LogWarning("Pending power command received from Dashboard: {Command}", hbRes.PendingCommand);
+                    ExecutePowerCommand(hbRes.PendingCommand);
+                }
+
+                return hbRes;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning("Failed to connect to Heartbeat API: {Message}", ex.Message);
+        }
+
+        return null;
     }
 
     public Task<bool> SendMetricsAsync(MetricsPayload payload, CancellationToken cancellationToken = default)
@@ -42,6 +70,27 @@ public class ApiClient : IApiClient
     public Task<bool> SendProcessesAndPortsAsync(ProcessAndPortStatusPayload payload, CancellationToken cancellationToken = default)
     {
         return PostWithRetryAsync("api/v1/agent/processes", payload, cancellationToken);
+    }
+
+    private void ExecutePowerCommand(string command)
+    {
+        try
+        {
+            if (command.Equals("reboot", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning("Executing Windows Reboot command: shutdown.exe /r /t 10");
+                Process.Start("shutdown.exe", "/r /t 10 /c \"Reboot requested from AditiaCloudMon Dashboard\"");
+            }
+            else if (command.Equals("shutdown", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning("Executing Windows Shutdown command: shutdown.exe /s /t 10");
+                Process.Start("shutdown.exe", "/s /t 10 /c \"Shutdown requested from AditiaCloudMon Dashboard\"");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to execute power command {Command}", command);
+        }
     }
 
     private async Task<bool> PostWithRetryAsync<T>(string endpoint, T payload, CancellationToken cancellationToken)

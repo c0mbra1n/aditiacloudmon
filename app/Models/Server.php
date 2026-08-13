@@ -61,4 +61,9 @@ class Server extends Model
     {
         return $this->hasMany(Alert::class);
     }
+
+    public function commands(): HasMany
+    {
+        return $this->hasMany(AgentCommand::class);
+    }
 }
