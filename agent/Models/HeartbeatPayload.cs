@@ -10,6 +10,18 @@ public class HeartbeatPayload
     [JsonPropertyName("hostname")]
     public string Hostname { get; set; } = string.Empty;
 
+    [JsonPropertyName("os_name")]
+    public string OsName { get; set; } = string.Empty;
+
+    [JsonPropertyName("os_version")]
+    public string OsVersion { get; set; } = string.Empty;
+
+    [JsonPropertyName("cpu_model")]
+    public string CpuModel { get; set; } = string.Empty;
+
+    [JsonPropertyName("cpu_cores")]
+    public int CpuCores { get; set; } = 1;
+
     [JsonPropertyName("agent_version")]
     public string AgentVersion { get; set; } = "1.0.0";
 

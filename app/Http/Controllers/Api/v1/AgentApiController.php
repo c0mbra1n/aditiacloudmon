@@ -88,6 +88,10 @@ class AgentApiController extends Controller
         $server->update([
             'status' => $status,
             'hostname' => strtoupper($request->input('hostname')),
+            'os_name' => $request->input('os_name', $server->os_name ?? 'Windows Server'),
+            'os_version' => $request->input('os_version', $server->os_version),
+            'cpu_model' => $request->input('cpu_model', $server->cpu_model),
+            'cpu_cores' => max(1, (int)$request->input('cpu_cores', $server->cpu_cores)),
             'agent_version' => $request->input('agent_version', '1.0.0'),
             'last_seen_at' => now(),
         ]);

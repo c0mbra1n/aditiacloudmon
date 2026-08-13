@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using AditiaMonitor.Agent.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.Win32;
 
 namespace AditiaMonitor.Agent.Services;
 
@@ -27,10 +28,17 @@ public class WindowsMetricCollector : IMetricCollector
         var (ramTotal, ramUsed, ramPercent) = GetMemoryUsage();
         var mainDiskPercent = GetPrimaryDiskUsagePercent();
 
+        var (osName, osVersion) = GetOsInformation();
+        var (cpuModel, cpuCores) = GetCpuInformation();
+
         var payload = new HeartbeatPayload
         {
             AgentId = agentId,
             Hostname = hostname,
+            OsName = osName,
+            OsVersion = osVersion,
+            CpuModel = cpuModel,
+            CpuCores = cpuCores,
             AgentVersion = "1.0.0",
             Timestamp = DateTime.UtcNow.ToString("o"),
             UptimeSeconds = uptimeSeconds,
@@ -211,7 +219,6 @@ public class WindowsMetricCollector : IMetricCollector
         catch (Exception ex)
         {
             _logger.LogWarning("Failed to query active TCP listeners: {Message}", ex.Message);
-            // Default simulation fallback
             foreach (var port in targetPorts)
             {
                 portItems.Add(new PortItem { Port = port, Protocol = "TCP", Status = port == 80 || port == 443 || port == 3306 ? "Open" : "Closed" });
@@ -227,6 +234,76 @@ public class WindowsMetricCollector : IMetricCollector
         };
 
         return Task.FromResult(payload);
+    }
+
+    private static (string osName, string osVersion) GetOsInformation()
+    {
+        string osName = "Windows Server";
+        string osVersion = Environment.OSVersion.Version.ToString();
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            try
+            {
+                using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+                if (key != null)
+                {
+                    var productName = key.GetValue("ProductName")?.ToString();
+                    var displayVersion = key.GetValue("DisplayVersion")?.ToString() ?? key.GetValue("ReleaseId")?.ToString();
+
+                    if (!string.IsNullOrEmpty(productName))
+                    {
+                        osName = productName;
+                    }
+                    if (!string.IsNullOrEmpty(displayVersion))
+                    {
+                        osVersion = $"{osVersion} ({displayVersion})";
+                    }
+                }
+            }
+            catch { }
+        }
+
+        if (osName == "Windows Server")
+        {
+            osName = RuntimeInformation.OSDescription;
+        }
+
+        return (osName, osVersion);
+    }
+
+    private static (string cpuModel, int cpuCores) GetCpuInformation()
+    {
+        int cores = Environment.ProcessorCount;
+        string model = "Processor";
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            try
+            {
+                using var key = Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\CentralProcessor\0");
+                if (key != null)
+                {
+                    var procName = key.GetValue("ProcessorNameString")?.ToString();
+                    if (!string.IsNullOrEmpty(procName))
+                    {
+                        model = procName.Trim();
+                    }
+                }
+            }
+            catch { }
+        }
+
+        if (model == "Processor")
+        {
+            var procIdent = Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER");
+            if (!string.IsNullOrEmpty(procIdent))
+            {
+                model = procIdent;
+            }
+        }
+
+        return (model, cores);
     }
 
     private double GetCpuUsagePercent()
