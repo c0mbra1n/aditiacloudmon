@@ -1,0 +1,50 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# IDE & Editor Files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment & Secrets
+.env
+.env.production
+.env.local
+!.env.example
+*.pem
+*.key
+*.pfx
+
+# Laravel Root Project
+/vendor/
+/node_modules/
+/public/build/
+/public/storage/
+/storage/*.key
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/storage/logs/*
+/bootstrap/cache/*.php
+.phpunit.result.cache
+
+# C# .NET Agent
+/agent/bin/
+/agent/obj/
+/agent/*.user
+/agent/*.userosscache
+/agent/*.suo
+/agent/*.userprefs
+/agent/appsettings.Development.json
+/agent/appsettings.Local.json
+/agent/publish/
+/scripts/Output/
+
+# Build & Temporary Files
+/build/
+/tmp/
+/logs/
+*.log

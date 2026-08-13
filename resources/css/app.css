@@ -1,0 +1,43 @@
+@import 'tailwindcss';
+@import 'nprogress/nprogress.css';
+@import 'sweetalert2/dist/sweetalert2.min.css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/* Custom NProgress styling (Solid color, Neo-Flat, No Gradients) */
+#nprogress .bar {
+    background: #4f46e5 !important; /* Solid Indigo 600 */
+    height: 3px !important;
+}
+
+#nprogress .peg {
+    box-shadow: 0 0 10px #4f46e5, 0 0 5px #4f46e5 !important;
+}
+
+#nprogress .spinner-icon {
+    border-top-color: #4f46e5 !important;
+    border-left-color: #4f46e5 !important;
+}
+
+/* SweetAlert Custom Solid Theme Adjustments */
+.swal2-popup {
+    border-radius: 1rem !important;
+    font-family: var(--font-sans) !important;
+}
+
+.swal2-confirm {
+    background-color: #4f46e5 !important;
+    box-shadow: none !important;
+    border-radius: 0.5rem !important;
+}
+
+.swal2-cancel {
+    border-radius: 0.5rem !important;
+}
