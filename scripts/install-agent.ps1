@@ -83,7 +83,7 @@ if ($existingService) {
 if (Test-Path -Path $targetExe) {
     Write-Host "[+] Mendaftarkan Windows Service: $serviceName" -ForegroundColor Green
     
-    $quotedPath = '"' + $targetExe + '"'
+    $quotedPath = '"' + $targetExe + '" --service'
     New-Service -Name $serviceName -BinaryPathName $quotedPath -DisplayName "Aditia Windows VPS Monitoring Agent" -StartupType Automatic | Out-Null
 
     Start-Service -Name $serviceName

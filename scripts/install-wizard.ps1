@@ -223,7 +223,7 @@ $btnInstall.Add_Click({
         }
 
         if (Test-Path $targetExe) {
-            $quotedPath = '"' + $targetExe + '"'
+            $quotedPath = '"' + $targetExe + '" --service'
             New-Service -Name $serviceName -BinaryPathName $quotedPath -DisplayName "Aditia Windows VPS Monitoring Agent" -StartupType Automatic | Out-Null
             Start-Service -Name $serviceName
         }
