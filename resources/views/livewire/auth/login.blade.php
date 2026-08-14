@@ -117,11 +117,4 @@
         </form>
     </div>
 
-    <!-- System Info Footer -->
-    <div class="text-center text-xs text-slate-500 space-y-1">
-        <p>Akses Terenkripsi HTTPS &bull; Password Eye Toggle Enabled</p>
-        <p>Default Login: <code
-                class="text-indigo-400 bg-slate-800 px-1.5 py-0.5 rounded">admin@aditiacloudmon.com</code> / <code
-                class="text-indigo-400 bg-slate-800 px-1.5 py-0.5 rounded">password123</code></p>
-    </div>
 </div>
